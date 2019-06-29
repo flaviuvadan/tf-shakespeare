@@ -25,3 +25,13 @@ class Vectorize:
         """
         vocabulary = rnn.Load.get_vocabulary()
         return np.array(vocabulary)
+
+    @staticmethod
+    def get_text_as_int():
+        """
+        Returns an array of integers representing the character indices
+        :return: [int]
+        """
+        text = rnn.Load.get_text()
+        char_to_idx = Vectorize.get_characters_to_index()
+        return np.array([char_to_idx[c] for c in text])

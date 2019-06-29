@@ -2,6 +2,8 @@
 
 import tensorflow as tf
 
+tf.enable_eager_execution()
+
 
 class Load:
     """ Load is responsible for downloading the Shakespeare text from TF """
