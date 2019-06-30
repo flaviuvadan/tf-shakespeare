@@ -5,7 +5,7 @@ import os
 import functools
 import tensorflow as tf
 
-from rnn import Data, Load
+from rnn import Data, Load, Vectorize
 
 
 class Model:
@@ -75,3 +75,36 @@ class Model:
         model.build(tf.TensorShape([1, None]))
         return model
 
+    @staticmethod
+    def generate_text(model, start_string):
+        """
+        Use the given model to generate text based on the given seed/start string
+        :param model: TF model
+        :param start_string: string to use as a starting point
+        :return: string - generated text
+        """
+        chars_to_generate = 1000
+        chars_to_index = Vectorize.get_characters_to_index()
+        index_to_chars = Vectorize.get_index_to_characters()
+        input_eval = [chars_to_index[s] for s in start_string]
+        input_eval = tf.expand_dims(input_eval, 0)
+
+        generated_text = []
+
+        # temperature functions as a control of the entropy associated with the generated text
+        # if the temperature is low, text is less entropic/more predictable and vice-versa
+        temperature = 1.0
+        model.reset_states()
+        for i in range(chars_to_generate):
+            predictions = model(input_eval)
+            # remove the batch dimension
+            predictions = tf.squeeze(predictions, 0)
+
+            # use a multinomial distribution to predict the word returned by the model
+            predictions = predictions / temperature
+            predicted_index = tf.multinomial(predictions, num_samples=1)[-1, 0].numpy()
+
+            # pass predicted word as next input to the model along with previous hidden state
+            input_eval = tf.expand_dims([predicted_index], 0)
+            generated_text.append(index_to_chars[predicted_index])
+        return start_string + ''.join(generated_text)

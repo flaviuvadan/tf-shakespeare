@@ -19,3 +19,4 @@ if __name__ == '__main__':
     #     Model.train_model(model)
 
     model = Model.get_model_from_checkpoint()
+    print(Model.generate_text(model, 'ROMEO: '))
