@@ -1,6 +1,6 @@
 """ Main file for running the model """
 
-import tensorflow as tf
+import sys
 
 from rnn import Data, Model
 
@@ -19,4 +19,4 @@ if __name__ == '__main__':
     #     Model.train_model(model)
 
     model = Model.get_model_from_checkpoint()
-    print(Model.generate_text(model, 'ROMEO: '))
+    print(Model.generate_text(model, sys.argv[1]))
