@@ -1,9 +1,11 @@
 """ Model file """
 
+import os
+
 import functools
 import tensorflow as tf
 
-from rnn import Data
+from rnn import Data, Load
 
 
 class Model:
@@ -21,7 +23,7 @@ class Model:
         """
         r_nn = functools.partial(tf.keras.layers.GRU,  # Gated Recurrent Unit
                                  recurrent_activation='sigmoid')
-        return tf.keras.Sequential([
+        model = tf.keras.Sequential([
             tf.keras.layers.Embedding(vocab_size, embedding_dim,
                                       batch_input_shape=[batch_size, None]),
             r_nn(rnn_units,
@@ -30,3 +32,37 @@ class Model:
                  stateful=True),
             tf.keras.layers.Dense(vocab_size)
         ])
+        model.compile(tf.train.AdamOptimizer(),
+                      loss=Model.loss)
+        return model
+
+    @staticmethod
+    def loss(labels, logits):
+        """
+        Return the loss associated with a prediction. "Measures the probability error in discrete classification tasks
+        in which the classes are mutually exclusive"
+        :param labels: actual values
+        :param logits: predicted values
+        :return: categorical cross-entropy between a given label and the predicted values
+        """
+        return tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits)
+
+    @staticmethod
+    def train_model(model, epochs=3):
+        """ Train the given model for the given epochs, should be generated via build_model() """
+        checkpoint_callback = Model.get_checkpoint_callback()
+        examples_per_epoch = len(Load.get_text()) // 100 // 64
+        model.fit(Data.get_training_dataset().repeat(),
+                  epochs=epochs,
+                  steps_per_epoch=examples_per_epoch,
+                  callbacks=[checkpoint_callback])
+
+    @staticmethod
+    def get_checkpoint_callback():
+        """ Returns the checkpoints for saving the model after each training epoch """
+        checkpoint_dir = './training_checkpoints'
+        checkpoint_prefix = os.path.join(checkpoint_dir, 'ckpt_{epoch}')
+        return tf.keras.callbacks.ModelCheckpoint(
+            filepath=checkpoint_prefix,
+            save_weights_only=True
+        )

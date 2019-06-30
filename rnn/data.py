@@ -40,13 +40,9 @@ class Data:
         return sequences.map(Data.split_input_target)
 
     @staticmethod
-    def get_training_batches():
-        """
-        Get a training batch
-        :return: []
-        """
+    def get_training_dataset():
+        """ Get training dataset """
         batch_size = 64
-        # examples_per_epoch = len(rnn.Load.get_text())
         buffer_size = 10000  # buffer size to shuffle the dataset
         dataset = Data.get_dataset()
         return dataset.shuffle(buffer_size).batch(batch_size, drop_remainder=True)
