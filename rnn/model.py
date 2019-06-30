@@ -64,5 +64,14 @@ class Model:
         checkpoint_prefix = os.path.join(checkpoint_dir, 'ckpt_{epoch}')
         return tf.keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_prefix,
-            save_weights_only=True
-        )
+            save_weights_only=True)
+
+    @staticmethod
+    def get_model_from_checkpoint():
+        """ Returns a model from the 3rd checkpoint """
+        checkpoint_dir = './training_checkpoints'
+        model = Model.build_model(65, 256, 1024, 1)
+        model.load_weights(tf.train.latest_checkpoint(checkpoint_dir))
+        model.build(tf.TensorShape([1, None]))
+        return model
+
